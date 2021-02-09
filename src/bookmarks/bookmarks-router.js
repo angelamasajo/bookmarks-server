@@ -1,8 +1,8 @@
 const express = require("express");
 const { v4: uuid } = require("uuid");
-const { isWebUrl } = require("valid-url");
+const { isWebUri } = require("valid-url");
 const logger = require("../logger");
-const store = "../store";
+const store = require("../store");
 
 const bookmarksRouter = express.Router();
 const bodyParser = express.json();
@@ -13,24 +13,25 @@ bookmarksRouter
     res.json(store.bookmarks);
   })
   .post(bodyParser, (req, res) => {
-    for (const field of ["title", "url", "rating"]) {
+    for (const field of ['title', 'url', 'rating']) {
       if (!req.body[field]) {
         logger.error(`${field} is required.`);
         return res.status(400).send(`${field} is required`);
       }
     }
+    const { title, url, description, rating } = req.body;
 
     if (!Number.isInteger(rating) || rating < 0 || rating > 5) {
       logger.error(`Invalid rating of ${rating} is supplied`);
       return res.status(400).send(`Rating must be between 0 and 5.`);
     }
 
-    if (!isWebUrl(url)) {
+    if (!isWebUri(url)) {
       logger.error(`Invalid url of '${url}' supplied`);
       return res.status(400).send(`Must be a valid URL`);
     }
 
-    const bookmark = { id: uurl(), title, url, description, rating };
+    const bookmark = { id: uuid(), title, url, description, rating };
 
     store.bookmarks.push(bookmark);
 
