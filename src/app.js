@@ -9,24 +9,18 @@ const bookmarksRouter = require('./bookmarks/bookmarks-router')
 
 const app = express()
 
-const morganOption = (NODE_ENV === 'production')
-  ? 'tiny'
-  : 'common';
-
-//all middleware vvvv
-app.use(morgan(morganOption))
-app.use(helmet())
+app.use(morgan((NODE_ENV === 'production') ? 'tiny' : 'common', {
+  skip: () => NODE_ENV === 'test'
+}))
 app.use(cors())
-//every route will require validation
+app.use(helmet())
 app.use(validateBearerToken)
 
 app.use(bookmarksRouter)
 
-
 app.get('/', (req, res) => {
   res.send('Hello, world!')
 })
-
 
 //ERROR HANDLER
 app.use(function errorHandler(error, req, res, next) {

@@ -1,5 +1,6 @@
 const express = require('express')
 const { isWebUri } = require('valid-url')
+const xss = require('xss')
 const logger = require('../logger')
 const BookmarksService = require('./bookmarks-service')
 
@@ -8,9 +9,9 @@ const bodyParser = express.json()
 
 const serializeBookmark = bookmark => ({
   id: bookmark.id,
-  title: bookmark.title,
+  title: xss(bookmark.title),
   url: bookmark.url,
-  description: bookmark.description,
+  description: xss(bookmark.description),
   rating: Number(bookmark.rating),
 })
 
@@ -24,7 +25,6 @@ bookmarksRouter
       .catch(next)
   })
   .post(bodyParser, (req, res, next) => {
-    // TODO: update to use db
     for (const field of ['title', 'url', 'rating']) {
       if (!req.body[field]) {
         logger.error(`${field} is required`)
@@ -33,6 +33,7 @@ bookmarksRouter
         })
       }
     }
+
     const { title, url, description, rating } = req.body
 
     const ratingNum = Number(rating)
@@ -58,11 +59,11 @@ bookmarksRouter
       newBookmark
     )
       .then(bookmark => {
-        logger.info(`Bookmark with id ${bookmark.id} created`)
+        logger.info(`Bookmark with id ${bookmark.id} created.`)
         res
-        .status(201)
-        .location(`/bookmarks/${bookmark.id}`)
-        .json(serializeBookmark(bookmark))
+          .status(201)
+          .location(`/bookmarks/${bookmark.id}`)
+          .json(serializeBookmark(bookmark))
       })
       .catch(next)
   })
@@ -88,7 +89,6 @@ bookmarksRouter
     res.json(serializeBookmark(res.bookmark))
   })
   .delete((req, res, next) => {
-    // TODO: update to use db
     const { bookmark_id } = req.params
     BookmarksService.deleteBookmark(
       req.app.get('db'),
@@ -96,9 +96,7 @@ bookmarksRouter
     )
       .then(numRowsAffected => {
         logger.info(`Bookmark with id ${bookmark_id} deleted.`)
-        res
-          .status(204)
-          .end()
+        res.status(204).end()
       })
       .catch(next)
   })
