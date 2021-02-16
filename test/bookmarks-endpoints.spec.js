@@ -7,7 +7,7 @@ const app = require('../src/app')
 const store = require('../src/store')
 
 
-describe.only('Bookmarks Endpoints', () => {
+describe('Bookmarks Endpoints', () => {
   let bookmarksCopy, db
 
   before('make knex instance', () => {
@@ -74,6 +74,7 @@ describe.only('Bookmarks Endpoints', () => {
       it(`responds with 200 and an empty list`, () => {
         return supertest(app)
           .get('/bookmarks')
+          .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
           .expect(200,[])
       })
     })

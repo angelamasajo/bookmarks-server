@@ -13,9 +13,11 @@ const morganOption = (NODE_ENV === 'production')
   ? 'tiny'
   : 'common';
 
+//all middleware vvvv
 app.use(morgan(morganOption))
 app.use(helmet())
 app.use(cors())
+//every route will require validation
 app.use(validateBearerToken)
 
 app.use(bookmarksRouter)
